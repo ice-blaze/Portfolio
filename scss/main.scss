@@ -1,0 +1,153 @@
+html {
+		font-family: Roboto, sans-serif;
+}
+
+.card-image > i {
+		position: absolute;
+		top: 30%;
+		left:37%;
+		font-size: 5em;
+		pointer-events: none;
+}
+
+.brand-logo {
+		white-space: nowrap;
+}
+
+.card-reveal {
+		color: black;
+}
+
+footer a, .card .card-action a, .card .card-action a:not(.btn):not(.btn-large):not(.btn-small):not(.btn-large):not(.btn-floating):hover{
+		color: #6ec3bd;
+}
+a:hover {
+		/* TODO animate instead of instant */
+		filter: brightness(130%);
+}
+
+.card .card-action a:not(.btn):not(.btn-large):not(.btn-small):not(.btn-large):not(.btn-floating) {
+		color: white;
+}
+
+h2 {
+		margin-top: 0;
+}
+
+.pointer {
+		cursor: pointer;
+}
+
+.sidenav-overlay {
+		z-index: 1;
+}
+
+footer {
+		background: linear-gradient(180deg, #516395, #614385);
+		background-size: 200% 400%;
+}
+
+.sidenav li > a {
+		color: white;
+}
+
+.card  {
+		background: linear-gradient(0deg, #516395, #516395);
+}
+
+$dark-color: #444;
+$light-color: #eee;
+.divider {
+		background: $dark-color;
+}
+
+.card-image > i {
+		color: $light-color;
+}
+
+body {
+		color: $dark-color;
+		background: $light-color;
+		/* background: url("https://i.imgur.com/edUR2Fo.png"); */
+		/* background-repeat: repeat; */
+		/* background-size: 100% 20%; */
+}
+
+sidenav, .sidenav-close {
+		color: white;
+
+		background: linear-gradient(90deg, #12c2e9, #c471ed, #f64f59);
+		/* dont forget to uncomment */
+		background-size: 200% 200%;
+
+
+		-webkit-animation: AnimationName 30s ease infinite;
+		-moz-animation: AnimationName 30s ease infinite;
+		animation: AnimationName 30s ease infinite;
+
+		@-webkit-keyframes AnimationName {
+				0%{background-position:52% 0%}
+				50%{background-position:49% 100%}
+				100%{background-position:52% 0%}
+		}
+		@-moz-keyframes AnimationName {
+				0%{background-position:52% 0%}
+				50%{background-position:49% 100%}
+				100%{background-position:52% 0%}
+		}
+		@keyframes AnimationName {
+				0%{background-position:52% 0%}
+				50%{background-position:49% 100%}
+				100%{background-position:52% 0%}
+		}
+}
+nav{
+		background: linear-gradient(90deg, #38B1EA, #c471ed, #f64f59);
+		background-size: 120% 200%;
+}
+
+h1, #resume>p{
+		text-align: center;
+}
+
+// Media Query Ranges
+$small-screen: 800px !default;
+$small-screen-up: $small-screen + 1px;
+$medium-screen: 1392px !default;
+$medium-screen-up: $medium-screen + 1px;
+$large-screen: 1600px !default;
+$large-screen-up: $large-screen + 1px;
+
+$medium-and-up: "only screen and (min-width : #{$small-screen-up})" !default;
+$large-and-up: "only screen and (min-width : #{$medium-screen-up})" !default;
+$small-and-down: "only screen and (max-width : #{$small-screen})" !default;
+$medium-and-down: "only screen and (max-width : #{$medium-screen})" !default;
+$medium-only: "only screen and (min-width : #{$small-screen-up}) and (max-width : #{$medium-screen})" !default;
+
+.card {
+		margin: 5px;
+
+		@media #{$small-and-down} {
+				margin: 0.5em;
+				width: 99%;
+		}
+		@media #{$medium-and-up} {
+				width: 48.58%;
+		}
+		@media #{$large-and-up} {
+				width: 32.3%;
+		}
+}
+
+#ribbon {
+		width:100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: -9999;
+		right:0;
+}
+
+body {
+		background-repeat: repeat;
+}

@@ -1,0 +1,64 @@
+version: '3'
+services:
+
+  bash:
+    image: node:10.10.0
+    working_dir: /code
+    volumes:
+      - .:/code
+    environment:
+      - PATH=/code/node_modules/.bin/:$PATH
+    command: "sh"
+
+  web:
+    image: node:10.10.0
+    ports:
+      - "80:80"
+    working_dir: "/code"
+    volumes:
+      - .:/code
+    environment:
+      - PATH=/code/node_modules/.bin/:$PATH
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        npm install 
+        reload -b -p 80
+  watch:
+    image: node:10.10.0
+    working_dir: "/code"
+    volumes:
+      - .:/code
+    environment:
+      - PATH=/code/node_modules/.bin:$PATH
+      - NODE_ENV=development
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        npm i 
+        webpack --config webpack.development.js -w --mode development
+  # lint:
+  #   image: node:10.10.0
+  #   working_dir: "/code"
+  #   volumes:
+  #     - .:/code
+  #   environment:
+  #     - PATH=/code/node_modules/.bin:$PATH
+  #   command: "npm run lint"
+
+  # test:
+  #   image: node:10.10.0
+  #   working_dir: "/code"
+  #   volumes:
+  #     - .:/code
+  #   environment:
+  #     - PATH=/code/node_modules/.bin:$PATH
+  #   command:
+  #     - /bin/sh
+  #     - -c
+  #     - |
+  #       npm install
+  #       webpack --config webpack.test.js --mode development
+  #       mocha build_test/bundle.js
