@@ -147,28 +147,115 @@ const createRubons = () => {
 	return rubons
 }
 
+const fshader = `
+precision mediump float;
+void main(void) {
+  gl_FragColor = vec4(0.9, 0.3, 0.6, 1.0);
+}
+`
+
+const vshader = `
+attribute vec3 position;
+
+void main(void) {
+  gl_Position = vec4(position, 1.0);
+}
+`
+
+const createShader = (gl, sourceCode, type) => {
+  const shader = gl.createShader( type )
+  gl.shaderSource( shader, sourceCode )
+  gl.compileShader( shader )
+
+  if ( !gl.getShaderParameter(shader, gl.COMPILE_STATUS) ) {
+    const info = gl.getShaderInfoLog( shader )
+    throw 'Could not compile WebGL program. \n\n' + info
+  }
+  return shader
+}
+
+const initShaders = (gl) => {
+  const fragmentShader = createShader(gl, fshader, gl.FRAGMENT_SHADER)
+  const vertexShader = createShader(gl, vshader, gl.VERTEX_SHADER)
+
+  const shader_prog = gl.createProgram()
+  gl.attachShader(shader_prog, vertexShader)
+  gl.attachShader(shader_prog, fragmentShader)
+  gl.linkProgram(shader_prog)
+
+  if (!gl.getProgramParameter(shader_prog, gl.LINK_STATUS)) {
+    console.error("Could not initialise shaders")
+  }
+
+  gl.useProgram(shader_prog)
+
+  shader_prog.positionLocation = gl.getAttribLocation(shader_prog, "position")
+  gl.enableVertexAttribArray(shader_prog.positionLocation)
+
+  return shader_prog
+}
+
+const initBuffers = (gl) => {
+  const triangleVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+  const vertices = [
+     0.0,  1.0,  0.0,
+    -1.0, -1.0,  0.0,
+     1.0, -1.0,  0.0,
+  ]
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+  triangleVertexPositionBuffer.itemSize = 3;
+  triangleVertexPositionBuffer.numItems = 3;
+
+  return triangleVertexPositionBuffer
+}
+
+const drawScene = (gl, triangleVertexPositionBuffer, shader_prog) => {
+  gl.viewport(0,0, gl.viewportWidth, gl.viewportHeight)
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+  gl.vertexAttribPointer(shader_prog.positionLocation, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+
+  gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems)
+}
+
 export const generateRubon = () => {
-	const rubons = createRubons()
+  var canvas = document.getElementById("ribbon")
+  const gl = canvas.getContext("webgl")
 
-	drawRubons(rubons)
+  if (!gl) {
+    console.alert("webgl is note available!!")
+  }
+  gl.viewportWidth = canvas.width
+  gl.viewportHeight = canvas.height
+  const shader_prog = initShaders(gl)
+  const triangleVertexPositionBuffer = initBuffers(gl)
+  gl.clearColor(0,0,0,1)
+  gl.enable(gl.DEPTH_TEST)
 
-	if( !isMobile() ) {
-		$('#ribbon').css({'position': 'fixed'})
-		setInterval(function(){
-			$('#ribbon').css({
-				'top' : -($(document).scrollTop() * 0.5)+"px"
-			});
-		}, 1)
-	} else {
-		const canvas = document.getElementsByTagName("canvas")[0]
-    const img = canvas.toDataURL("image/png");
+  drawScene(gl, triangleVertexPositionBuffer, shader_prog)
+	// const rubons = createRubons()
 
-		$("body").css({
-			"background-image": "url(" + img + ")",
-			"-webkit-background-image": "url(" + img + ")",
-			"background-repeat": "repeat",
-		})
+	// drawRubons(rubons)
 
-		$("#ribbon").hide()
-	}
+	// if( !isMobile() ) {
+	// 	$('#ribbon').css({'position': 'fixed'})
+	// 	setInterval(function(){
+	// 		$('#ribbon').css({
+	// 			'top' : -($(document).scrollTop() * 0.5)+"px"
+	// 		});
+	// 	}, 1)
+	// } else {
+	// 	const canvas = document.getElementsByTagName("canvas")[0]
+  //   const img = canvas.toDataURL("image/png");
+
+	// 	$("body").css({
+	// 		"background-image": "url(" + img + ")",
+	// 		"-webkit-background-image": "url(" + img + ")",
+	// 		"background-repeat": "repeat",
+	// 	})
+
+	// 	$("#ribbon").hide()
+	// }
 }
