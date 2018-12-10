@@ -30,9 +30,9 @@ $(document).ready(() => {
 	}
 
 	// Sort correctly the grid and wait until all image are loaded
+	generateRubon()
 	let counter = 0
 	const masoneryInterval = setInterval(() =>{
-		generateRubon()
 		new Masonry("#masonry-grid")
 		counter += 1
 

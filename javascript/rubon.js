@@ -14,32 +14,15 @@ const random = () => {
 }
 
 const initCanvas = () => {
-	const canvas = document.getElementsByTagName('canvas')[0]
-	const context = canvas.getContext('2d')
-
 	const pr = window.devicePixelRatio || 1
 	const w = window.innerWidth
 
-	canvas.width = w*pr
-	let h = 0
-	if (isMobile()) {
-		h = 1000 * pr
-		canvas.height = h
-		h = window.innerHeight
-	} else {
-		h = window.innerHeight
-		canvas.height = document.documentElement.scrollHeight * pr
-	}
-
-	context.scale(pr, pr)
-	context.globalAlpha = 0.6
-
-	context.clearRect(0, 0, w, h)
+	const canvasWidth = w*pr
+	const h = window.innerHeight
 
 	return {
 		width: w,
 		height: h,
-		context: context,
 	}
 }
 
@@ -50,72 +33,46 @@ class Rubon {
 		this.initialOffset = initialOffset
 
 		const {width, height, context} = initCanvas()
-		this.context = context
 
 		this.generatePointsAndColors(width, height)
 
 		this.offsetY = 0
 	}
 
-	nextPoint(p, height) {
-		const t =  p + (random()*2-1.1)*90
-
-		if (t > height || t < 0) {
-			return this.nextPoint(p)
-		} else {
-			return t
-		}
+	getNextY(j) {
+		const halfDisplayHeight = 4.0
+		return (((j.y + random()) % 1.0) / halfDisplayHeight) - this.initialOffset
 	}
 
 	generatePointAndColor(points, height) {
 		const i = points[points.length - 2]
 		const j = points[points.length - 1]
 
-		const k = j.x + (random()*2-0.25)*90
-		const n = this.nextPoint(j.y, height)
+		const nextX = j.x + (random() * 0.08)
+		const nextY = this.getNextY(j)
 
 		this.color -= (Math.PI*2) / -50
-		this.colors.push((
-			Math.cos(this.color)*127+128<<16 |
-			Math.cos(this.color+(Math.PI*2)/3)*127+128<<8 |
-			Math.cos(this.color+Math.PI*2/3*2)*127+128
-		).toString(16))
+		this.colors.push({
+			r: (Math.cos(this.color) + 1) / 2,
+			g: (Math.cos(this.color+(Math.PI*2)/3) + 1) / 2,
+			b: (Math.cos(this.color+Math.PI*2/3*2) + 1) / 2,
+		})
 
 		points.push({
-			x:k,
-			y:n
+			x:nextX,
+			y:nextY
 		})
 	}
 
 	generatePointsAndColors(width, height) {
-		let initialPointSize = isMobile() ? 30 : 90
-		height = isMobile() ? height/2 : height
-
 		this.points = [
-			{x: 0, y: (height * .7 + initialPointSize) + this.initialOffset},
-			{x: 0, y: (height * .7 - initialPointSize) + this.initialOffset},
+			{x: 0, y:  0.1 - this.initialOffset},
+			{x: 0, y: -0.1 - this.initialOffset},
 		]
 		this.colors = []
 
-		while (this.points[this.points.length - 1].x < width + 90) {
+		while (this.points[this.points.length - 1].x < 1.0) {
 			this.generatePointAndColor(this.points, height)
-		}
-	}
-
-	draw() {
-		for (let idx = 0; idx < this.colors.length; idx += 1) {
-			const i = this.points[idx]
-			const j = this.points[idx + 1]
-			const k = this.points[idx + 2]
-
-			this.context.beginPath()
-			this.context.moveTo(i.x, i.y)
-			this.context.lineTo(j.x, j.y)
-			this.context.lineTo(k.x, k.y)
-			this.context.closePath()
-
-			this.context.fillStyle = "#" + this.colors[idx]
-			this.context.fill()
 		}
 	}
 
@@ -136,11 +93,10 @@ const createRubons = () => {
 	const rubons = []
 	seed = originalSeed
 
-	const deltaBetweenRubons = (isMobile() ? 600 : 800)
 	const numberOfRubon = 20
 	let color = 0.2 // 0.2 because chrome blue instead of pink
 	for (let i=0; i < numberOfRubon; i += 1) {
-		rubons.push(new Rubon(i * deltaBetweenRubons, color))
+		rubons.push(new Rubon(i * 0.9, color))
 		color = rubons[rubons.length - 1].color
 	}
 
@@ -149,16 +105,26 @@ const createRubons = () => {
 
 const fshader = `
 precision mediump float;
+varying vec3 v_color;
+
 void main(void) {
-  gl_FragColor = vec4(0.9, 0.3, 0.6, 1.0);
+	gl_FragColor = vec4(v_color,  0.5);
 }
 `
 
 const vshader = `
-attribute vec3 position;
+attribute vec4 position;
+attribute vec3 color;
+uniform float scrollOffset;
+varying vec3 v_color;
 
 void main(void) {
-  gl_Position = vec4(position, 1.0);
+	// *2 -1 [-1,1] and not [0,1]
+	vec2 newPos = position.xy * 2.0 - 1.0;
+	newPos.y += position.z + scrollOffset;
+	v_color = color;
+
+	gl_Position = vec4(newPos, 0.0, 1.0);
 }
 `
 
@@ -191,51 +157,106 @@ const initShaders = (gl) => {
 
   shader_prog.positionLocation = gl.getAttribLocation(shader_prog, "position")
   gl.enableVertexAttribArray(shader_prog.positionLocation)
+  shader_prog.color = gl.getAttribLocation(shader_prog, "color")
+  gl.enableVertexAttribArray(shader_prog.color)
+
+  shader_prog.scrollOffset = gl.getUniformLocation(shader_prog, "scrollOffset");
 
   return shader_prog
 }
 
-const initBuffers = (gl) => {
+const initBuffers = (gl, rubon) => {
   const triangleVertexPositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
-  const vertices = [
-     0.0,  1.0,  0.0,
-    -1.0, -1.0,  0.0,
-     1.0, -1.0,  0.0,
-  ]
+
+  const vertices = []
+  const colors = []
+	for (let i=0;i<rubon.points.length-2;i+=1) {
+		vertices.push(rubon.points[i].x)
+		vertices.push(rubon.points[i].y)
+		vertices.push(rubon.initialOffset)
+
+		vertices.push(rubon.points[i + 1].x)
+		vertices.push(rubon.points[i + 1].y)
+		vertices.push(rubon.initialOffset)
+
+		vertices.push(rubon.points[i + 2].x)
+		vertices.push(rubon.points[i + 2].y)
+		vertices.push(rubon.initialOffset)
+
+		for(let j=0;j<3;j++) {
+			colors.push(rubon.colors[i].r)
+			colors.push(rubon.colors[i].g)
+			colors.push(rubon.colors[i].b)
+		}
+	}
+
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
   triangleVertexPositionBuffer.itemSize = 3;
-  triangleVertexPositionBuffer.numItems = 3;
+  triangleVertexPositionBuffer.numItems = vertices.length / 3;
 
-  return triangleVertexPositionBuffer
+  const colorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+	colorBuffer.itemSize = 3
+  colorBuffer.numItems = colors.length / 3;
+
+  return {
+		position: triangleVertexPositionBuffer,
+		color: colorBuffer,
+	}
 }
 
-const drawScene = (gl, triangleVertexPositionBuffer, shader_prog) => {
-  gl.viewport(0,0, gl.viewportWidth, gl.viewportHeight)
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+const drawScene = (gl, buffers, shader_prog) => {
+	const backgroundColor = 238/255
+	gl.clearColor(backgroundColor,backgroundColor,backgroundColor,1.0)
+	gl.clear(gl.COLOR_BUFFER_BIT)
+	gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
-  gl.vertexAttribPointer(shader_prog.positionLocation, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+	buffers.forEach((buffer) => {
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position)
+		gl.vertexAttribPointer(shader_prog.positionLocation, buffer.position.itemSize, gl.FLOAT, false, 0, 0)
 
-  gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems)
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.color)
+		gl.vertexAttribPointer(shader_prog.color, buffer.color.itemSize, gl.FLOAT, false, 0, 0)
+
+		const scrollValue = $(document).scrollTop() / document.documentElement.clientHeight / 2
+		gl.uniform1f (shader_prog.scrollOffset, scrollValue)
+
+		gl.drawArrays(gl.TRIANGLES, 0, buffer.position.numItems)
+	})
 }
 
 export const generateRubon = () => {
+	const rubons = createRubons()
+
   var canvas = document.getElementById("ribbon")
-  const gl = canvas.getContext("webgl")
+	const gl = canvas.getContext("webgl", {
+		antialias: true,
+	})
 
-  if (!gl) {
-    console.alert("webgl is note available!!")
-  }
-  gl.viewportWidth = canvas.width
-  gl.viewportHeight = canvas.height
-  const shader_prog = initShaders(gl)
-  const triangleVertexPositionBuffer = initBuffers(gl)
-  gl.clearColor(0,0,0,1)
-  gl.enable(gl.DEPTH_TEST)
 
-  drawScene(gl, triangleVertexPositionBuffer, shader_prog)
-	// const rubons = createRubons()
+	if (!gl) {
+		console.error("webgl is note available!!")
+	}
+
+	canvas.width = gl.viewportWidth = window.innerWidth
+	canvas.height = gl.viewportHeight = window.innerHeight
+
+	const shader_prog = initShaders(gl)
+	const buffers = rubons.map((rubon) => initBuffers(gl, rubon))
+
+	gl.enable(gl.BLEND)
+	gl.viewport(0,0, gl.viewportWidth, gl.viewportHeight)
+
+	let oldScroll = -199
+	setInterval(function(){
+		const newScroll = $(document).scrollTop()
+		if (oldScroll != newScroll) {
+			drawScene(gl, buffers, shader_prog)
+			oldScroll = newScroll
+		}
+	}, 1)
 
 	// drawRubons(rubons)
 

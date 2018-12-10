@@ -139,16 +139,9 @@ $medium-only: "only screen and (min-width : #{$small-screen-up}) and (max-width 
 		}
 }
 
-/* body { */
-/* 		background-repeat: repeat; */
-/* } */
-
 #ribbon {
 		width:100%;
-    height:100%;
-		position: absolute;
-		top: 0;
-		left: 0;
+		height:100%;
+		position: fixed;
 		z-index: -9999;
-		right:0;
 }
