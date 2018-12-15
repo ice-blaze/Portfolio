@@ -6,6 +6,8 @@ import {collaborators} from "./collaborators.js"
 import {projects} from "./projects.js"
 import {generateRubon} from "./rubon.js"
 
+generateRubon()
+
 const app = new Vue({
   el: '#app',
   data: {
@@ -30,13 +32,12 @@ $(document).ready(() => {
 	}
 
 	// Sort correctly the grid and wait until all image are loaded
-	generateRubon()
 	let counter = 0
 	const masoneryInterval = setInterval(() =>{
 		new Masonry("#masonry-grid")
 		counter += 1
 
-		if (counter > 30) {
+		if (counter > 10) {
 			clearInterval(masoneryInterval)
 		}
 	}, 200);

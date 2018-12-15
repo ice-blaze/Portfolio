@@ -235,7 +235,6 @@ export const generateRubon = () => {
 		antialias: true,
 	})
 
-
 	if (!gl) {
 		console.error("webgl is note available!!")
 	}
@@ -257,26 +256,4 @@ export const generateRubon = () => {
 			oldScroll = newScroll
 		}
 	}, 1)
-
-	// drawRubons(rubons)
-
-	// if( !isMobile() ) {
-	// 	$('#ribbon').css({'position': 'fixed'})
-	// 	setInterval(function(){
-	// 		$('#ribbon').css({
-	// 			'top' : -($(document).scrollTop() * 0.5)+"px"
-	// 		});
-	// 	}, 1)
-	// } else {
-	// 	const canvas = document.getElementsByTagName("canvas")[0]
-  //   const img = canvas.toDataURL("image/png");
-
-	// 	$("body").css({
-	// 		"background-image": "url(" + img + ")",
-	// 		"-webkit-background-image": "url(" + img + ")",
-	// 		"background-repeat": "repeat",
-	// 	})
-
-	// 	$("#ribbon").hide()
-	// }
 }
