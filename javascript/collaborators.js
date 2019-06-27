@@ -4,7 +4,7 @@ export const collaborators = [
 		"link":"https://www.linkedin.com/in/danyjupille/"
 	}, /*1*/  {
 		"name":"Johan Chavaillaz",
-		"link":"https://www.chavjoh.ch/website/"
+		"link":"https://johan.chavaillaz.com/resume/"
 	}, /*2*/  {
 		"name":"Jason Racine",
 		"link":"https://www.linkedin.com/in/jason-racine-0888a545/"
