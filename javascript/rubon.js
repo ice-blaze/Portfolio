@@ -237,6 +237,7 @@ export const generateRubon = () => {
 
 	if (!gl) {
 		console.error("webgl is note available!!")
+		return;
 	}
 
 	canvas.width = gl.viewportWidth = window.innerWidth

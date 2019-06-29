@@ -68,9 +68,10 @@ $light-color: #eee;
 body {
 		color: $dark-color;
 		background: $light-color;
-		/* background: url("https://i.imgur.com/edUR2Fo.png"); */
-		/* background-repeat: repeat; */
-		/* background-size: 100% 20%; */
+		// error with local files https://github.com/webpack-contrib/css-loader/issues/256
+		background: url("https://raw.githubusercontent.com/ice-blaze/Portfolio/gh-pages/media/image/backup-rubon.png");
+		background-repeat: repeat;
+		background-size: 100% 20%;
 }
 
 sidenav, .sidenav-close {

@@ -1,6 +1,7 @@
 const path = require("path");
 
 module.exports = {
+	mode: 'production',
 	entry: {
 		"bundle-scss": "./imports-scss.js",
 		"bundle-js": "./imports-js.js",
