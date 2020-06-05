@@ -52,7 +52,7 @@
 				<div class="cards-container" id="masonry-grid">
 					<div class="card" v-for="project in projects">
 						<div class="card-image" v-show="project.image">
-							<img class="materialboxed" :src="'media/image/' + project.image + '.png'" v-if="!project.video && project.image">
+							<img class="materialboxed" :src="'media/image/' + project.image + '.png'" v-if="!project.video && project.image" @load="refresh()">
 							<video class="responsive-video materialboxed" :poster="'media/image/' + project.image + '.png'" v-if="project.video" loop muted>
 								<source :src="'media/video/' + project.video + '.mp4'" type="video/mp4">
 							</video>
