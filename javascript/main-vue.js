@@ -22,6 +22,7 @@ const app = new Vue({
 		refresh: () => {
 			// Everytime we load a new image, we re organize the grid
 			refreshMasonery()
+			setTimeout(refreshMasonery, 1000)
 		}
 	}
 })
